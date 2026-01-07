@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  records ProductRecord[]
+  entity ProductEntity @relation(fields: [entity_id], references: [id])
+  entity_id String @db.ObjectId
+  title String
+  description String?
+  tags String[] @default([])
+  images String[] @default([])
+  buy_date DateTime
+  buy_price Float
+  buy_quotas Int
+  buy_quotas_price Float
+  @@map("product")
+}
+
+model ProductEntity {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  products Product[]
+  name String
+  long_name String?
+  short_name String?
+  @@map("product_entity")
+}
+
+model ProductRecord {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  product Product @relation(fields: [product_id], references: [id])
+  product_id String @db.ObjectId
+  payments ProductRecordPayment[]
+  payments_goals Int
+  @@map("product_record")
+}
+
+type ProductRecordPayment {
+  paid_date DateTime
+  paid_month String
+}
+
+model Job {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  type JobType
+  status JobStatus
+  payload Json
+  createdAt DateTime @default(now())
+  @@map("job")
+}
+
+enum JobType {
+  Product
+}
+
+enum JobStatus {
+  Pending
+  Processing
+  Done
+  Failed
+}
