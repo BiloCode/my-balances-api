@@ -42,6 +42,7 @@ model ProductRecord {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   product Product @relation(fields: [product_id], references: [id])
   product_id String @db.ObjectId @unique
+  payments_goals Int
   payments ProductRecordPayment[]
   @@map("product_record")
 }

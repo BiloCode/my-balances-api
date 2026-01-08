@@ -9,6 +9,8 @@ import { ProductDto } from './dto/product.dto';
 import { ProductDetailDto } from './dto/product_detail.dto';
 import { ProductCreateDto } from './dto/product_create.dto';
 import { ProductCreateJobDto } from './dto/product_create_job.dto';
+import { ProductCreatePaymentsDto } from './dto/product_create_payments.dto';
+import { ProductCreatePaymentsResponseDto } from './dto/product_create_payments_response.dto';
 
 @Injectable()
 export class ProductsService {
@@ -63,6 +65,7 @@ export class ProductsService {
       const record = await this.prisma.productRecord.create({
         data: {
           product_id: product.id,
+          payments_goals: product.buy_quotas,
           payments: [],
         },
       });
@@ -87,6 +90,51 @@ export class ProductsService {
         status: job.status,
       },
       created_at: job.created_at,
+    };
+  }
+
+  async insertPayments(
+    dto: ProductCreatePaymentsDto,
+  ): Promise<ProductCreatePaymentsResponseDto> {
+    const records = await this.prisma.productRecord.findFirst({
+      select: {
+        payments: true,
+      },
+      where: {
+        id: dto.product_record_id,
+        product_id: dto.product_id,
+      },
+    });
+
+    if (records !== null) {
+      const payments = records.payments.reduce((acc, payment) => {
+        acc[payment.paid_month] = payment;
+        return acc;
+      }, {});
+
+      for (const payment of dto.payments) {
+        payments[payment.paid_month] = payment;
+      }
+
+      await this.prisma.productRecord.update({
+        data: {
+          payments: {
+            set: Object.values(payments),
+          },
+        },
+        where: {
+          id: dto.product_record_id,
+          product_id: dto.product_id,
+        },
+      });
+
+      return {
+        success: true,
+      };
+    }
+
+    return {
+      success: false,
     };
   }
 }

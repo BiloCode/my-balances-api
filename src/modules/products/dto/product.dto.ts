@@ -30,7 +30,10 @@ export class ProductDto {
   description: string;
 
   @ApiProperty()
-  entity: string;
+  entity_id: string;
+
+  @ApiProperty()
+  record_id: string;
 
   @ApiProperty({ type: [ProductDtoTag] })
   tags: ProductDtoTag[];
@@ -46,4 +49,7 @@ export class ProductDto {
 
   @ApiProperty()
   buy_price_remaining: number;
+
+  @ApiProperty()
+  buy_payments_remaining: number;
 }

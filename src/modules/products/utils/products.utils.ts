@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Product, ProductRecord } from '@prisma/client';
 import { addMonths, format, setDate } from 'date-fns';
 
@@ -18,9 +19,18 @@ export class ProductMapper {
   static parse(
     product: Product & { record: ProductRecord | null },
   ): ProductDto {
+    if (product.record === null) {
+      throw new BadRequestException(
+        `Product id '${product.id}' record is null`,
+      );
+    }
+
     const buy_price_remaining =
       product.buy_price -
-      (product.record?.payments.length ?? 0) * product.buy_quotas_price;
+      product.record.payments.length * product.buy_quotas_price;
+
+    const buy_payments_remaining =
+      product.record.payments_goals - product.record.payments.length;
 
     const tags: ProductDtoTag[] = product.tags.map((title) => ({
       title,
@@ -39,10 +49,12 @@ export class ProductMapper {
       description: product.description ?? '',
       tags,
       images: product.images,
-      entity: product.entity_id,
+      entity_id: product.entity_id,
+      record_id: product.record.id,
       buy_date: product.buy_date.toISOString(),
       buy_price: product.buy_price,
       buy_price_remaining,
+      buy_payments_remaining,
     };
   }
 }
