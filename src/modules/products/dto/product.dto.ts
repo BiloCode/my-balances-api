@@ -27,6 +27,9 @@ export class ProductDto {
   title: string;
 
   @ApiProperty()
+  description: string;
+
+  @ApiProperty()
   entity: string;
 
   @ApiProperty({ type: [ProductDtoTag] })

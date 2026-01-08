@@ -15,7 +15,7 @@ datasource db {
 
 model Product {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  records ProductRecord[]
+  record ProductRecord?
   entity ProductEntity @relation(fields: [entity_id], references: [id])
   entity_id String @db.ObjectId
   title String
@@ -41,9 +41,8 @@ model ProductEntity {
 model ProductRecord {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   product Product @relation(fields: [product_id], references: [id])
-  product_id String @db.ObjectId
+  product_id String @db.ObjectId @unique
   payments ProductRecordPayment[]
-  payments_goals Int
   @@map("product_record")
 }
 

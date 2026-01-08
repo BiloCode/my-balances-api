@@ -1,16 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product, ProductRecord } from '@prisma/client';
 
 import { JobsService } from '@/jobs/jobs.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
+import { ProductMapper, ProductMapperDetail } from './utils/products.utils';
+
+import { ProductDto } from './dto/product.dto';
+import { ProductDetailDto } from './dto/product_detail.dto';
 import { ProductCreateDto } from './dto/product_create.dto';
 import { ProductCreateJobDto } from './dto/product_create_job.dto';
-import {
-  ProductDto,
-  ProductDtoTag,
-  ProductDtoTagTheme,
-} from './dto/product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -22,28 +20,28 @@ export class ProductsService {
   async findAll(): Promise<ProductDto[]> {
     const products = await this.prisma.product.findMany({
       include: {
-        records: true,
+        record: true,
       },
     });
 
-    return products.map((product) => this.productMapper(product));
+    return products.map((product) => ProductMapper.parse(product));
   }
 
-  async findOne(id: string): Promise<ProductDto> {
+  async findDetail(id: string): Promise<ProductDetailDto> {
     const product = await this.prisma.product.findFirst({
       where: {
         id,
       },
       include: {
-        records: true,
+        record: true,
       },
     });
 
     if (product === null) {
-      throw new NotFoundException(`Product id '${id}' not found`);
+      throw new NotFoundException(`Product id '${id}' is not found`);
     }
 
-    return this.productMapper(product);
+    return ProductMapperDetail.parse(product);
   }
 
   async insertOne(dto: ProductCreateDto): Promise<ProductDto> {
@@ -62,17 +60,16 @@ export class ProductsService {
         },
       });
 
-      const records = await this.prisma.productRecord.create({
+      const record = await this.prisma.productRecord.create({
         data: {
           product_id: product.id,
           payments: [],
-          payments_goals: product.buy_quotas,
         },
       });
 
-      return this.productMapper({
+      return ProductMapper.parse({
         ...product,
-        records: [records],
+        record,
       });
     });
 
@@ -91,47 +88,5 @@ export class ProductsService {
       },
       created_at: job.created_at,
     };
-  }
-
-  private productMapper(
-    product: Product & { records: ProductRecord[] },
-  ): ProductDto {
-    const buy_price_remaining =
-      product.buy_price -
-      product.records.reduce(
-        (acc, record) =>
-          acc + record.payments.length * product.buy_quotas_price,
-        0,
-      );
-
-    const tags: ProductDtoTag[] = product.tags.map((title) => ({
-      title,
-      theme: ProductDtoTagTheme.DEFAULT,
-    }));
-
-    if (this.isDirectLoan(product.buy_quotas)) {
-      tags.push({ title: 'Directo', theme: ProductDtoTagTheme.CUSTOM });
-    } else if (this.isCreditLoan(product.buy_quotas)) {
-      tags.push({ title: 'Credito', theme: ProductDtoTagTheme.CUSTOM });
-    }
-
-    return {
-      id: product.id,
-      title: product.title,
-      tags,
-      images: product.images,
-      entity: product.entity_id,
-      buy_date: product.buy_date.toISOString(),
-      buy_price: product.buy_price,
-      buy_price_remaining,
-    };
-  }
-
-  private isCreditLoan(quotas: number) {
-    return quotas > 1;
-  }
-
-  private isDirectLoan(quotas: number) {
-    return quotas == 1;
   }
 }

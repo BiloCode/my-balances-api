@@ -3,6 +3,7 @@ import { ApiBody, ApiOkResponse } from '@nestjs/swagger';
 
 import { ProductsService } from './products.service';
 import { ProductDto } from './dto/product.dto';
+import { ProductDetailDto } from './dto/product_detail.dto';
 import { ProductCreateDto } from './dto/product_create.dto';
 import { ProductCreateJobDto } from './dto/product_create_job.dto';
 
@@ -16,10 +17,10 @@ export class ProductsController {
     return this.product.findAll();
   }
 
-  @ApiOkResponse({ type: ProductDto })
+  @ApiOkResponse({ type: ProductDetailDto })
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.product.findOne(id);
+  findDetail(@Param('id') id: string) {
+    return this.product.findDetail(id);
   }
 
   @ApiOkResponse({ type: ProductDto })

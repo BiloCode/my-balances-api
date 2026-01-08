@@ -22,6 +22,11 @@
     "noFallthroughCasesInSwitch": false,
     "baseUrl": "./",
     "paths": {
+      "@/prisma/*": ["./src/modules/prisma/*"],
+      "@/products/*": ["./src/modules/products/*"],
+      "@/products_entity/*": ["./src/modules/products_entity/*"],
+      "@/jobs/*": ["./src/modules/jobs/*"],
+      "@/jobs_runner/*": ["./src/modules/jobs_runner/*"],
       "@/*": ["./src/*"]
     }
   }

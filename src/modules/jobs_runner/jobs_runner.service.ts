@@ -4,7 +4,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { JobsService } from '@/jobs/jobs.service';
 import { ProductsService } from '@/products/products.service';
-
 import { ProductCreateDto } from '@/products/dto/product_create.dto';
 
 @Injectable()
